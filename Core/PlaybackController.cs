@@ -10,7 +10,7 @@ public class PlaybackController
     private const SongSource SPOTIFY = SongSource.Spotify;
     
     private const PlaybackState STOPPED = PlaybackState.Stopped;
-    
+
     private readonly IMusicBackend _local;
     private readonly IMusicBackend _spotify;
     
