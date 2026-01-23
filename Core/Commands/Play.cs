@@ -2,10 +2,10 @@ namespace Core.Commands;
 
 public class Play : ICommand
 {
-    private readonly PlaybackController _music;
+    private readonly IMusicBackend _music;
     private readonly Song _song;
 
-    public Play(PlaybackController music, Song song)
+    public Play(IMusicBackend music, Song song)
     {
         _music = music;
         _song = song;
@@ -13,6 +13,6 @@ public class Play : ICommand
 
     public Task ExecuteAsync()
     {
-        return _music.Play(_song);
+        return _music.PlayAsync(_song);
     }
 }
