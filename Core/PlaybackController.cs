@@ -1,15 +1,15 @@
 using Core.Exceptions;
-using static Core.IMusicBackend;
 
 namespace Core;
 
 /// <summary>
 /// The Music Master is the main part of this application, it controls playback and stores Playlists via commands that will be sent by the CLI / TLI.
 /// </summary>
-public class PlaybackController : IMusicBackend
+public class PlaybackController
 {
     private const SongSource SPOTIFY = SongSource.Spotify;
-    private const SongSource LOCAL = SongSource.Local;
+    
+    private const PlaybackState STOPPED = PlaybackState.Stopped;
     
     private readonly IMusicBackend _local;
     private readonly IMusicBackend _spotify;
@@ -17,6 +17,8 @@ public class PlaybackController : IMusicBackend
     private Queue<Song> _playbackQueue = new();
     private Stack<Song> _playedQueue = new();
     private Song? _currentSong;
+    
+    private PlaybackState _state = PlaybackState.Stopped;
 
     public PlaybackController(IMusicBackend local, IMusicBackend spotify)
     {
@@ -30,10 +32,11 @@ public class PlaybackController : IMusicBackend
     /// <param name="song"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task PlayAsync(Song song)
+    public Task Play(Song song)
     {
-        if (_currentSong != null) _playedQueue.Push(_currentSong);
+        if (_currentSong != null && !_currentSong.Equals(song)) _playedQueue.Push(_currentSong);
         _currentSong = song;
+        _state = PlaybackState.Playing;
         return _currentSong.Source == SPOTIFY ? _spotify.PlayAsync(song) : _local.PlayAsync(song);
     }
     /// <summary>
@@ -41,9 +44,10 @@ public class PlaybackController : IMusicBackend
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task PauseAsync()
+    public Task Pause()
     {
-        if(_currentSong == null) throw new NoActiveSongException();
+        if(_state == STOPPED) throw new NoActiveSongException();
+        _state = PlaybackState.Paused;
         return _currentSong is { Source: SPOTIFY } ? _spotify.PauseAsync() : _local.PauseAsync();
     }
     
@@ -52,9 +56,10 @@ public class PlaybackController : IMusicBackend
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task ResumeAsync()
+    public Task Resume()
     {
-        if(_currentSong == null) throw new NoActiveSongException();
+        if(_state == STOPPED) throw new NoActiveSongException();
+        _state = PlaybackState.Playing;
         return _currentSong is { Source: SPOTIFY } ? _spotify.ResumeAsync() : _local.ResumeAsync();
     }
 
@@ -63,12 +68,17 @@ public class PlaybackController : IMusicBackend
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task StopAsync()
+    public Task Stop()
     {
-        if(_currentSong == null) throw new NoActiveSongException();
-        _playedQueue.Push(_currentSong);
+        if (_state == STOPPED) throw new NoActiveSongException();
+
+        var backend = _currentSong is { Source: SPOTIFY } ? _spotify : _local;
+
+        if (_currentSong != null) _playedQueue.Push(_currentSong);
         _currentSong = null;
-        return _local.StopAsync();
+
+        _state = PlaybackState.Stopped;
+        return backend.StopAsync();
     }
 
     /// <summary>
@@ -79,7 +89,7 @@ public class PlaybackController : IMusicBackend
     {
         return _playbackQueue.Count == 0 ? 
             throw new InvalidPlaybackStateException("play next", "queue is empty") 
-            : PlayAsync(_playbackQueue.Dequeue());
+            : Play(_playbackQueue.Dequeue());
     }
     
     /// <summary>
@@ -91,6 +101,15 @@ public class PlaybackController : IMusicBackend
     {
         return _playedQueue.Count == 0
             ? throw new InvalidPlaybackStateException("play previous", "not been played before")
-            : PlayAsync(_playedQueue.Pop());
+            : Play(_playedQueue.Pop());
     }
+}
+
+// -- Utils --
+
+public enum PlaybackState
+{
+    Stopped,
+    Paused,
+    Playing
 }

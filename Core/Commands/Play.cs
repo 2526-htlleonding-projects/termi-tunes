@@ -13,6 +13,6 @@ public class Play : ICommand
 
     public Task ExecuteAsync()
     {
-        return _music.PlayAsync(_song);
+        return _music.Play(_song);
     }
 }
