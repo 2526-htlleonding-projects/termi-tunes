@@ -1,3 +1,5 @@
+using Core.Dto;
+
 namespace Core.Commands;
 
 public class Play : ICommand

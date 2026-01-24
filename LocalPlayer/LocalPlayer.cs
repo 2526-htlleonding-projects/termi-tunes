@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.Dto;
 using NAudio.Wave;
 using LocalPlayer.Exceptions;
 
