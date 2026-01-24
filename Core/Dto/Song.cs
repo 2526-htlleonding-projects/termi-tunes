@@ -7,7 +7,7 @@ namespace Core.Dto;
 /// </summary>
 public sealed class Song
 {
-    private string Id { get; }
+    public string Id { get; }
     public string Title { get; }
     public string Artist { get; }
     public TimeSpan Duration { get; }
