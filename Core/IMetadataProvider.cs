@@ -5,9 +5,9 @@ namespace Core;
 public interface IMetadataProvider
 {
     /// <summary>
-    /// Fetches metadata for a specific source and returns a populated Song object.
+    /// Fetches metadata for a specific source and returns a populated Song dto.
     /// </summary>
-    Task<Song> GetMetadataAsync(string identifier);
+    Task<Song> GetMetadataAsync(string path);
     
     /// <summary>
     /// Used to determine which provider to use in the PlaybackController.

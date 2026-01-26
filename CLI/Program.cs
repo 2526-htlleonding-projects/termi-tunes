@@ -8,7 +8,7 @@ namespace CLI;
 
 static class Program
 {
-    static async Task<int> Main(string[] args)
+    static Task<int> Main(string[] args)
     {
         IMusicBackend backend = new LocalPlayer.LocalPlayer();
         
@@ -20,12 +20,12 @@ static class Program
         {
             var context = parser.Parse(args);
             var command = commandFactory.Create(context);
-            return 0;
+            return Task.FromResult(0);
         }
         catch (CliException e)
         {
             Console.Error.WriteLine(e.Message);
-            return 1;
+            return Task.FromResult(1);
         }
     }
 }

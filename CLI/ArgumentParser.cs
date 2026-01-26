@@ -3,6 +3,8 @@ using Core.Commands;
 
 namespace CLI;
 
+//TODO use library
+
 public sealed class ArgumentParser
 {
     public CommandContext Parse(string[] args)

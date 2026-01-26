@@ -17,12 +17,22 @@ public sealed class CommandFactory
         return ctx.CommandName switch
         {
             "pause" => new Pause(_musicBackend),
-            //TODO handle the whole database situation
-            "play" => new Play(_musicBackend, SongFactory.CreateDummy()),
+            "play" => new Play(_musicBackend, ),
             "resume" => new Resume(_musicBackend),
             "stop" => new Stop(_musicBackend),
             _ => throw new InvalidSongParameterException("Unknown command")
         };
+    }
+
+    /// <summary>
+    /// Parses a nickname to a Song using SongService
+    /// </summary>
+    /// <param name="nick"></param>
+    /// <returns></returns>
+    private Song ParseSong(string nick)
+    {
+        var songservice = new SongService();
+        var song = songservice.GetSongReferenceAsync(nick);
     }
 }
 

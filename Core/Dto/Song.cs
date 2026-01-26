@@ -51,5 +51,6 @@ public sealed class Song
 public enum SongSource
 {
     Local,
-    Spotify
+    Spotify,
+    Nigga
 }
