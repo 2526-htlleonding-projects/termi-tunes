@@ -2,15 +2,9 @@ namespace Core.Commands;
 
 public class Resume : ICommand
 {
-    private readonly IMusicBackend _music;
-
-    public Resume(IMusicBackend music)
+    public Task ExecuteAsync(PlaybackController controller)
     {
-        _music = music;
-    }
-    
-    public Task ExecuteAsync()
-    {
-        return  _music.ResumeAsync();
+        controller.Resume();
+        return Task.CompletedTask;
     }
 }

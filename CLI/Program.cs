@@ -1,31 +1,32 @@
-using CLI.Exceptions;
+using CommandLine;
 using Core;
-using Core.Commands;
-using SpotifyPlayer;
-using LocalPlayer;
 
 namespace CLI;
 
-static class Program
+class Program
 {
-    static Task<int> Main(string[] args)
+    private static readonly IMusicBackend _spotify;
+    private static readonly IMusicBackend _local;
+    
+    static async Task Main(string[] args)
     {
-        IMusicBackend backend = new LocalPlayer.LocalPlayer();
-        
-        var commandFactory = new CommandFactory(backend);
-        var parser = new ArgumentParser();
-        var playbackController = new PlaybackController(backend, new SpotifyPlayer.SpotifyPlayer());
+        // 1. Initialize your Core Controller
+        var controller = new PlaybackController(_local, _spotify); 
 
-        try
-        {
-            var context = parser.Parse(args);
-            var command = commandFactory.Create(context);
-            return Task.FromResult(0);
-        }
-        catch (CliException e)
-        {
-            Console.Error.WriteLine(e.Message);
-            return Task.FromResult(1);
-        }
+        // 2. Parse and Map
+        await Parser.Default.ParseArguments<
+                PlayOptions, PauseOptions, ResumeOptions, 
+                LyricsOptions, SearchOptions>(args)
+            .MapResult(
+                async (object opts) => 
+                {
+                    // Map CLI Options to Core Command
+                    var command = CommandMapper.Map(opts);
+                    
+                    // Execute using the Controller
+                    await command.ExecuteAsync(controller);
+                },
+                errors => Task.CompletedTask // Handle parsing errors (built-in)
+            );
     }
 }

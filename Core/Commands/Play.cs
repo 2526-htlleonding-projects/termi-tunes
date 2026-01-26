@@ -4,17 +4,14 @@ namespace Core.Commands;
 
 public class Play : ICommand
 {
-    private readonly IMusicBackend _music;
-    private readonly Song _song;
+    public string Target { get; init; } 
+    public bool Shuffle { get; init; }
+    public bool Loop { get; set; }
 
-    public Play(IMusicBackend music, Song song)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        _music = music;
-        _song = song;
-    }
-
-    public Task ExecuteAsync()
-    {
-        return _music.PlayAsync(_song);
+        var song = controller.Search(Target);
+        
+        await controller.Play(song, Shuffle);
     }
 }

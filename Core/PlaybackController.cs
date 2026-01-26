@@ -20,6 +20,7 @@ public class PlaybackController
     private Song? _currentSong;
     
     private PlaybackState _state = PlaybackState.Stopped;
+    private bool _shuffle = false;
 
     public PlaybackController(IMusicBackend local, IMusicBackend spotify)
     {
@@ -33,8 +34,12 @@ public class PlaybackController
     /// <param name="song"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task Play(Song song)
+    public Task Play(Song song, bool shuffle)
     {
+        _shuffle =  shuffle;
+        
+        //TODO handle shuffing
+        
         if (_currentSong != null && !_currentSong.Equals(song)) _playedQueue.Push(_currentSong);
         _currentSong = song;
         _state = PlaybackState.Playing;
@@ -90,7 +95,7 @@ public class PlaybackController
     {
         return _playbackQueue.Count == 0 ? 
             throw new InvalidPlaybackStateException("play next", "queue is empty") 
-            : Play(_playbackQueue.Dequeue());
+            : Play(_playbackQueue.Dequeue(), _shuffle);
     }
     
     /// <summary>
@@ -102,7 +107,19 @@ public class PlaybackController
     {
         return _playedQueue.Count == 0
             ? throw new InvalidPlaybackStateException("play previous", "not been played before")
-            : Play(_playedQueue.Pop());
+            : Play(_playedQueue.Pop(), _shuffle);
+    }
+    
+    public Song Search(string target)
+    {
+        //Search for Song and return it.
+        throw new NotImplementedException();
+    }
+
+    public Task Lyrics()
+    {
+        //Fetch Lyrics from ILyricsProvider
+        throw new NotImplementedException();
     }
 }
 
