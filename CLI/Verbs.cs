@@ -73,8 +73,8 @@ public class AddOptions {
 
 // -- Playlists and Appearance --
 
-[Verb("c", HelpText = "Enter a playlist context.")]
-public class EnterPlaylistOptions {
+[Verb("c", HelpText = "Enter a playlist.")]
+public class ChangePlaylistOptions {
     [Value(0, Required = true)]
     public string Name { get; set; }
 }

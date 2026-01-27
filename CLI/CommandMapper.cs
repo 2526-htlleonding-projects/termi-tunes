@@ -1,3 +1,4 @@
+using CLI.Exceptions;
 using Core.Commands;
 
 namespace CLI;
@@ -29,15 +30,48 @@ public static class CommandMapper
                 Query = o.Query, 
                 AutoPlayFirst = o.PlayFirst
             },
+            
+            QueueOptions o => new QueueCommand
+            {
+                Track = o.Track
+            },
+            
+            SkipOptions o => new Skip(),
+            
+            BackOptions o => new Back(),
+            
+            NicknameOptions o => new ChangeNick
+            {
+                Target = o.Target,
+                NewNick = o.NewNick
+                
+            },
+            
+            AddOptions o => new Add
+            {
+                Playlist = o.Playlist
+            },
+            
+            ChangePlaylistOptions o => new ChangePlaylist
+            {
+                Name = o.Name
+            },
+            
+            ListPlaylistsOptions o => new ListPlaylists(),
+            
+            ListThemesOptions o => new ListThemes(),
+            
+            ChangeThemeOptions o => new ChangeTheme
+            {
+                ThemeName = o.ThemeName
+            },
 
-            _ => throw new ArgumentException("Unknown command type", nameof(result))
+            _ => throw new InvalidCommandExceptions(result.GetType().Name)
         };
     }
 
     private static bool MapShuffle(PlayOptions o)
     {
-        // Logic for your specific shuffle flags:
-        // -ns (NoShuffle) takes priority, then -ss (Smart), then -s (Standard)
         if (o.NoShuffle) return false;
         if (o.SmartShuffle || o.Shuffle) return true;
         return false; 

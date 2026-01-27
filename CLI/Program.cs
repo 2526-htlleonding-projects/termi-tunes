@@ -3,17 +3,17 @@ using Core;
 
 namespace CLI;
 
-class Program
+static class Program
 {
     private static readonly IMusicBackend _spotify;
     private static readonly IMusicBackend _local;
     
     static async Task Main(string[] args)
     {
-        // 1. Initialize your Core Controller
+        // Initialize Core Controller
         var controller = new PlaybackController(_local, _spotify); 
 
-        // 2. Parse and Map
+        // Parse and Map
         await Parser.Default.ParseArguments<
                 PlayOptions, PauseOptions, ResumeOptions, 
                 LyricsOptions, SearchOptions>(args)
