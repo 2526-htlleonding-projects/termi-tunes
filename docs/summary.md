@@ -35,7 +35,7 @@ CLI and TUI with **ctheme blue** or list all themes with **ltheme** and then sel
 keys.
 
 If you want to change the device youre playing on, you have to excecute **spotify**, this will switch you to spotify
-only mode where you'll be able to pick your device with **cdevice "Pendelins Fire TV Cube"** or just use **ldevice** to
+only mode where you'll be able to pick your device with **cdevice "Fire TV Cube"** or just use **ldevice** to
 list all and then selcet the one you want with the number keys.
 
 #### Ussage
