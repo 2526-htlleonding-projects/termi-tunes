@@ -2,10 +2,10 @@ namespace Core.Commands;
 
 public class QueueCommand : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.Queue(Track);
     }
 
-    public string Track { get; set; }
+    public string Track { get; set; } = string.Empty;
 }

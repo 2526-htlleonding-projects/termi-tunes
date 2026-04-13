@@ -2,11 +2,11 @@ namespace Core.Commands;
 
 public class ChangeNick : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.ChangeNick(Target, NewNick);
     }
 
-    public string Target { get; set; }
-    public string NewNick { get; set; }
+    public string Target { get; set; } = string.Empty;
+    public string NewNick { get; set; } = string.Empty;
 }

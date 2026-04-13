@@ -28,17 +28,16 @@ public sealed class Song
     /// <param name="nickname"></param>
     /// <param name="creators"></param>
     /// <exception cref="InvalidSongParameterException"></exception>
-    public Song(string id, string title, string artist, TimeSpan duration, SongSource source, string? sourcePath, string nickname, List<Artist> creators)
+    public Song(string id, string title, string artist, TimeSpan duration, SongSource source, string? sourcePath, string nickname, List<Artist>? creators)
     {
-        //Song(id, cleanTitle, cleanArtist, duration, SongSource.Local, path, nickname)
-        Id = id;
+        Id = id.Trim();
         Title = title.Trim();
         Artist = artist.Trim();
         Duration = duration;
         Source = source;
-        SourcePath = sourcePath.Trim();
-        Nickname = nickname;
-        Creators = creators;
+        SourcePath = sourcePath?.Trim() ?? string.Empty;
+        Nickname = nickname.Trim();
+        Creators = creators ?? [];
     }
 
     public override bool Equals(object? obj)
@@ -51,6 +50,5 @@ public sealed class Song
 public enum SongSource
 {
     Local,
-    Spotify,
-    Nigga
+    Spotify
 }

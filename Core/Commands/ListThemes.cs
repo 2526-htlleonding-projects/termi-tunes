@@ -2,8 +2,12 @@ namespace Core.Commands;
 
 public class ListThemes : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        var themes = await controller.ListThemes();
+        for (var i = 0; i < themes.Count; i++)
+        {
+            Console.WriteLine($"{i}. {themes[i]}");
+        }
     }
 }

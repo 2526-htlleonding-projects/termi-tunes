@@ -2,10 +2,10 @@ namespace Core.Commands;
 
 public class ChangePlaylist : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.ChangePlaylist(Name);
     }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 }

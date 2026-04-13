@@ -2,9 +2,8 @@ namespace Core.Commands;
 
 public class Stop : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        controller.Stop();
-        return Task.CompletedTask;
+        await controller.Stop();
     }
 }

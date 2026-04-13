@@ -11,7 +11,7 @@ public static class SongFactory
     /// <returns></returns>
     public static Song CreateDummy()
     {
-        return new Song("id", "title", "me", TimeSpan.Zero, SongSource.Local, null, "dummy", null);
+        return new Song("id", "title", "me", TimeSpan.Zero, SongSource.Local, null, "dummy", []);
     }
     
     /// <summary>
@@ -58,7 +58,7 @@ public static class SongFactory
     /// </summary>
     /// <param name="title"></param>
     /// <returns></returns>
-    private static string GenerateDefaultNickname(string title)
+    public static string GenerateDefaultNickname(string title)
     {
         return System.Text.RegularExpressions.Regex.Replace(title.ToLower(), @"[^a-z0-9]+", "_").Trim('_');
     }

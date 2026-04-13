@@ -1,21 +1,22 @@
-namespace CLI;
-
 using CommandLine;
+
+namespace CLI;
 
 // -- Playback --
 
 [Verb("play", HelpText = "Play a song or playlist.")]
-public class PlayOptions {
-    [Value(0, MetaName = "target", HelpText = "Song or playlist name/URI.")]
-    public string Target { get; set; }
+public class PlayOptions
+{
+    [Value(0, MetaName = "target", HelpText = "Song nickname/path/query or playlist name/#index.")]
+    public string? Target { get; set; }
 
     [Option('s', "shuffle", HelpText = "Turn on standard shuffle.")]
     public bool Shuffle { get; set; }
 
-    [Option('m', "smart_shuffle", HelpText = "Turn on smart shuffle.")]
+    [Option("smart_shuffle", HelpText = "Turn on smart shuffle.")]
     public bool SmartShuffle { get; set; }
 
-    [Option('r', "no_shuffle", HelpText = "Turn off shuffle.")]
+    [Option("no_shuffle", HelpText = "Turn off shuffle.")]
     public bool NoShuffle { get; set; }
 
     [Option('l', "loop", HelpText = "Toggle loop mode.")]
@@ -29,7 +30,8 @@ public class PauseOptions { }
 public class ResumeOptions { }
 
 [Verb("lyr", HelpText = "Display lyrics for the current song.")]
-public class LyricsOptions {
+public class LyricsOptions
+{
     [Option('a', "all", HelpText = "Print all lyrics at once.")]
     public bool PrintAll { get; set; }
 }
@@ -37,9 +39,10 @@ public class LyricsOptions {
 // -- Queue --
 
 [Verb("queue", HelpText = "Add a track to the queue.")]
-public class QueueOptions {
-    [Value(0, Required = true)]
-    public string Track { get; set; }
+public class QueueOptions
+{
+    [Value(0, Required = true, HelpText = "Song nickname/path/query.")]
+    public string Track { get; set; } = string.Empty;
 }
 
 [Verb("skip", HelpText = "Skip to the next song.")]
@@ -51,32 +54,42 @@ public class BackOptions { }
 // -- Management --
 
 [Verb("search", HelpText = "Search for a song.")]
-public class SearchOptions {
+public class SearchOptions
+{
     [Value(0, Required = true)]
-    public string Query { get; set; }
+    public string Query { get; set; } = string.Empty;
 
     [Option('f', "first", HelpText = "Automatically play the first result.")]
     public bool PlayFirst { get; set; }
 }
 
 [Verb("cnick", HelpText = "Change the nickname of a song.")]
-public class NicknameOptions {
-    [Value(0, HelpText = "Current name/ID")] public string Target { get; set; }
-    [Value(1, HelpText = "New nickname")] public string NewNick { get; set; }
+public class NicknameOptions
+{
+    [Value(0, Required = true, HelpText = "Current nickname")]
+    public string Target { get; set; } = string.Empty;
+
+    [Value(1, Required = true, HelpText = "New nickname")]
+    public string NewNick { get; set; } = string.Empty;
 }
 
 [Verb("add", HelpText = "Add current or specified song to a playlist.")]
-public class AddOptions {
-    [Value(0, Required = true, HelpText = "Playlist name")]
-    public string Playlist { get; set; }
+public class AddOptions
+{
+    [Value(0, HelpText = "Optional song nickname/path/query")]
+    public string? Target { get; set; }
+
+    [Value(1, HelpText = "Optional playlist name")]
+    public string? Playlist { get; set; }
 }
 
-// -- Playlists and Appearance --
+// -- Playlists and appearance --
 
-[Verb("c", HelpText = "Enter a playlist.")]
-public class ChangePlaylistOptions {
+[Verb("c", HelpText = "Enter/change playlist by name or #index.")]
+public class ChangePlaylistOptions
+{
     [Value(0, Required = true)]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 [Verb("l", HelpText = "List all playlists.")]
@@ -86,7 +99,23 @@ public class ListPlaylistsOptions { }
 public class ListThemesOptions { }
 
 [Verb("ctheme", HelpText = "Change the UI theme.")]
-public class ChangeThemeOptions {
+public class ChangeThemeOptions
+{
     [Value(0, Required = true)]
-    public string ThemeName { get; set; }
+    public string ThemeName { get; set; } = string.Empty;
 }
+
+// -- Spotify mode and devices --
+
+[Verb("spotify", HelpText = "Switch to spotify-only mode.")]
+public class SpotifyModeOptions { }
+
+[Verb("cdevice", HelpText = "Change playback device.")]
+public class ChangeDeviceOptions
+{
+    [Value(0, Required = true)]
+    public string DeviceName { get; set; } = string.Empty;
+}
+
+[Verb("ldevice", HelpText = "List available devices.")]
+public class ListDevicesOptions { }

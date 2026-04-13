@@ -2,8 +2,12 @@ namespace Core.Commands;
 
 public class ListPlaylists : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        var playlists = await controller.ListPlaylists();
+        for (var i = 0; i < playlists.Count; i++)
+        {
+            Console.WriteLine($"{i}. {playlists[i]}");
+        }
     }
 }

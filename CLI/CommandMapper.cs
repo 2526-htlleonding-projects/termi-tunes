@@ -10,62 +10,27 @@ public static class CommandMapper
         return result switch
         {
             PlayOptions o => new Play
-            { 
-                Target = o.Target, 
+            {
+                Target = o.Target ?? string.Empty,
                 Shuffle = MapShuffle(o),
-                Loop = o.Loop 
+                Loop = o.Loop
             },
-            
             PauseOptions _ => new Pause(),
-            
             ResumeOptions _ => new Resume(),
-            
-            LyricsOptions o => new Lyrics
-            {
-                PrintAll = o.PrintAll
-            },
-            
-            SearchOptions o => new Search
-            {
-                Query = o.Query, 
-                AutoPlayFirst = o.PlayFirst
-            },
-            
-            QueueOptions o => new QueueCommand
-            {
-                Track = o.Track
-            },
-            
-            SkipOptions o => new Skip(),
-            
-            BackOptions o => new Back(),
-            
-            NicknameOptions o => new ChangeNick
-            {
-                Target = o.Target,
-                NewNick = o.NewNick
-                
-            },
-            
-            AddOptions o => new Add
-            {
-                Playlist = o.Playlist
-            },
-            
-            ChangePlaylistOptions o => new ChangePlaylist
-            {
-                Name = o.Name
-            },
-            
-            ListPlaylistsOptions o => new ListPlaylists(),
-            
-            ListThemesOptions o => new ListThemes(),
-            
-            ChangeThemeOptions o => new ChangeTheme
-            {
-                ThemeName = o.ThemeName
-            },
-
+            LyricsOptions o => new Lyrics { PrintAll = o.PrintAll },
+            SearchOptions o => new Search { Query = o.Query, AutoPlayFirst = o.PlayFirst },
+            QueueOptions o => new QueueCommand { Track = o.Track },
+            SkipOptions _ => new Skip(),
+            BackOptions _ => new Back(),
+            NicknameOptions o => new ChangeNick { Target = o.Target, NewNick = o.NewNick },
+            AddOptions o => new Add { Target = o.Target, Playlist = o.Playlist },
+            ChangePlaylistOptions o => new ChangePlaylist { Name = o.Name },
+            ListPlaylistsOptions _ => new ListPlaylists(),
+            ListThemesOptions _ => new ListThemes(),
+            ChangeThemeOptions o => new ChangeTheme { ThemeName = o.ThemeName },
+            SpotifyModeOptions _ => new SwitchSpotifyMode(),
+            ChangeDeviceOptions o => new ChangeDevice { DeviceName = o.DeviceName },
+            ListDevicesOptions _ => new ListDevices(),
             _ => throw new InvalidCommandExceptions(result.GetType().Name)
         };
     }
@@ -74,6 +39,6 @@ public static class CommandMapper
     {
         if (o.NoShuffle) return false;
         if (o.SmartShuffle || o.Shuffle) return true;
-        return false; 
+        return false;
     }
 }

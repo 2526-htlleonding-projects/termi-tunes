@@ -2,10 +2,11 @@ namespace Core.Commands;
 
 public class Add : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.Add(Target, Playlist);
     }
 
-    public string Playlist { get; set; }
+    public string? Target { get; set; }
+    public string? Playlist { get; set; }
 }

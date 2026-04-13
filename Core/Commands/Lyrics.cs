@@ -2,11 +2,9 @@ namespace Core.Commands;
 
 public class Lyrics : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        //TODO make it fucking right
-        controller.Lyrics();
-        return Task.CompletedTask;
+        await controller.Lyrics(PrintAll);
     }
 
     public bool PrintAll { get; set; }

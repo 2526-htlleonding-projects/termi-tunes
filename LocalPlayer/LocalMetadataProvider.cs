@@ -4,12 +4,12 @@ using Core.Dto;
 namespace LocalPlayer;
 
 /// <summary>
-/// Can get Metadata of a song by looking into the file.
+/// Gets metadata of a local song file.
 /// </summary>
 public class LocalMetadataProvider : IMetadataProvider
 {
     public SongSource SupportedSource { get; }
-    
+
     public LocalMetadataProvider(SongSource supportedSource)
     {
         SupportedSource = supportedSource;
@@ -20,21 +20,12 @@ public class LocalMetadataProvider : IMetadataProvider
         var file = TagLib.File.Create(path);
         var tag = file.Tag;
 
-        var title = tag.Title ?? "Unknown";
-        var artist = tag.FirstPerformer ??  "Unknown";
-        var album  = tag.Album  ?? "Unknown";
-        var year = tag.Year;
-        var track    = tag.Track;
-        var genre  = tag.FirstGenre ?? "Unknown";
+        var title = tag.Title ?? Path.GetFileNameWithoutExtension(path);
+        var artist = tag.FirstPerformer ?? "Unknown";
         var duration = file.Properties.Duration;
-        var bitrate = file.Properties.AudioBitrate;
 
-        List<Artist> artists = null;
-        artists!.Add(new Artist(" ", artist));
+        List<Artist> artists = [new Artist("local", artist)];
 
-        Task<Song> local = Task.Run(() =>
-            SongFactory.CreateLocal(title, artist, duration, path, artists)
-        );
-        return local;
+        return Task.FromResult(SongFactory.CreateLocal(title, artist, duration, path, artists));
     }
 }

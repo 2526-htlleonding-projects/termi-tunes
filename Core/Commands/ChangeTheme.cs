@@ -2,10 +2,10 @@ namespace Core.Commands;
 
 public class ChangeTheme : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.ChangeTheme(ThemeName);
     }
 
-    public string ThemeName { get; set; }
+    public string ThemeName { get; set; } = string.Empty;
 }

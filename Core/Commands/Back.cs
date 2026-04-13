@@ -1,9 +1,12 @@
 namespace Core.Commands;
 
+/// <summary>
+/// Play prev. song
+/// </summary>
 public class Back : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.PlayPrevious();
     }
 }

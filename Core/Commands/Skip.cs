@@ -2,8 +2,8 @@ namespace Core.Commands;
 
 public class Skip : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        throw new NotImplementedException();
+        await controller.PlayNext();
     }
 }

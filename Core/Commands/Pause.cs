@@ -2,9 +2,8 @@ namespace Core.Commands;
 
 public class Pause : ICommand
 {
-    public Task ExecuteAsync(PlaybackController controller)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        controller.Pause();
-        return Task.CompletedTask;
+        await controller.Pause();
     }
 }

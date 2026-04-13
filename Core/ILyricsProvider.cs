@@ -1,6 +1,6 @@
 using Core.Dto;
 
-namespace CLI;
+namespace Core;
 
 public interface ILyricsProvider
 {
