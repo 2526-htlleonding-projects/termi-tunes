@@ -1,29 +1,41 @@
-﻿using Core;
+using Core;
+using Core.Dto;
 
 namespace SpotifyPlayer;
 
 /// <summary>
-/// This is the link to Spotify's api.
+/// Placeholder Spotify backend.
+/// This keeps the CLI functional until real Spotify API integration is implemented.
 /// </summary>
-public class SpotifyPlayer : IMusicBackend
+public class SpotifyPlayer : IMusicBackend, ILyricsProvider
 {
     public Task PlayAsync(Song song)
     {
-        throw new NotImplementedException();
+        Console.WriteLine($"Spotify play: {song.Title} - {song.Artist}");
+        return Task.CompletedTask;
     }
 
     public Task PauseAsync()
     {
-        throw new NotImplementedException();
+        Console.WriteLine("Spotify pause.");
+        return Task.CompletedTask;
     }
 
     public Task ResumeAsync()
     {
-        throw new NotImplementedException();
+        Console.WriteLine("Spotify resume.");
+        return Task.CompletedTask;
     }
 
     public Task StopAsync()
     {
-        throw new NotImplementedException();
+        Console.WriteLine("Spotify stop.");
+        return Task.CompletedTask;
+    }
+
+    public Task GetLyrics(Song song)
+    {
+        Console.WriteLine($"Lyrics for '{song.Title}' are not integrated yet.");
+        return Task.CompletedTask;
     }
 }

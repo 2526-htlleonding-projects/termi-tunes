@@ -1,18 +1,18 @@
+using Core.Dto;
+
 namespace Core.Commands;
 
 public class Play : ICommand
 {
-    private readonly IMusicBackend _music;
-    private readonly Song _song;
+    public string Target { get; init; } = string.Empty;
+    public bool Shuffle { get; init; }
+    public bool SmartShuffle { get; init; }
+    public bool Loop { get; set; }
 
-    public Play(IMusicBackend music, Song song)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        _music = music;
-        _song = song;
-    }
-
-    public Task ExecuteAsync()
-    {
-        return _music.PlayAsync(_song);
+        var song = controller.Search(Target, Shuffle, SmartShuffle);
+        
+        await controller.Play(await song, Shuffle, Loop, SmartShuffle);
     }
 }

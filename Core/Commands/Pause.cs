@@ -2,15 +2,8 @@ namespace Core.Commands;
 
 public class Pause : ICommand
 {
-    private readonly IMusicBackend _music;
-
-    public Pause(IMusicBackend music)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        _music = music;
-    }
-    
-    public Task ExecuteAsync()
-    {
-        return _music.PauseAsync();
+        await controller.Pause();
     }
 }

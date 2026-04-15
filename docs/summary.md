@@ -35,7 +35,7 @@ CLI and TUI with **ctheme blue** or list all themes with **ltheme** and then sel
 keys.
 
 If you want to change the device youre playing on, you have to excecute **spotify**, this will switch you to spotify
-only mode where you'll be able to pick your device with **cdevice "Fire TV Cube"** or just use **ldevice** to
+only mode where you'll be able to pick your device with **cdevice "Pendelins Fire TV Cube"** or just use **ldevice** to
 list all and then selcet the one you want with the number keys.
 
 #### Ussage
@@ -44,15 +44,21 @@ list all and then selcet the one you want with the number keys.
 commands: 
     playback:
         play        - plays song or playlist
+            -shuffle / -s
+            -smart_shuffle / -ss
+            -no_shuffle / -ns
+            -loop / -l
         pause       - pauses current song
         resume      - resume current song
         lyr         - display lyrics in current theme
+            -a      - print all lyrics
     qeueu:
         queue       - add to qeueu
-        next        - playes next in qeueu
-        prev        - playes last played
+        skip        - playes next in qeueu
+        back        - playes last played
     management:
         search      - search a song
+            -f      - play first result
         cnick       - change nickname of a song
         add         - adds song to playlist
     playlists:
@@ -61,20 +67,15 @@ commands:
     appereance theme:
         ltheme      - list all themes (select with number keys)
         ctheme      - change theme
+        
+// maybe required 
     spotify-only mode:
         spotify     - switch to spotify only mode
         cdevice     - change devices
         ldevice     - list all available devices (select with number keys)
-        
-
-flags:
-    -shuffle / -s
-    -smart_shuffle / -ss
-    -no_shuffle / -ns
-    -loop / -l
 
 example:
-    play 1 -ss      - plays the playlist number 1 with smart shuffling
-    play call_me    - plays "Call me" from a playlist (auto complete songs)
-    
+    play #1 -ss             - plays the playlist number 1 with smart shuffling
+    play call_me            - plays "Call me" from a playlist (auto complete songs)
+    search -f "call me"     - searches for the term and plays first result
 ```

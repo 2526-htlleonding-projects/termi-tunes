@@ -1,9 +1,9 @@
 namespace Core.Commands;
 
-public class Resume : ICommand
+public class Skip : ICommand
 {
     public async Task ExecuteAsync(PlaybackController controller)
     {
-        await controller.Resume();
+        await controller.PlayNext();
     }
 }

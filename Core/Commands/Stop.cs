@@ -2,15 +2,8 @@ namespace Core.Commands;
 
 public class Stop : ICommand
 {
-    private readonly IMusicBackend _music;
-    
-    public Stop(IMusicBackend music)
+    public async Task ExecuteAsync(PlaybackController controller)
     {
-        _music = music;
-    }
-    
-    public Task ExecuteAsync()
-    {
-        return _music.StopAsync();
+        await controller.Stop();
     }
 }
