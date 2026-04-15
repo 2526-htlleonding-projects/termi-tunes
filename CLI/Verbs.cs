@@ -29,6 +29,9 @@ public class PauseOptions { }
 [Verb("resume", HelpText = "Resume current playback.")]
 public class ResumeOptions { }
 
+[Verb("stop", HelpText = "Stop current playback.")]
+public class StopOptions { }
+
 [Verb("lyr", HelpText = "Display lyrics for the current song.")]
 public class LyricsOptions
 {
@@ -63,6 +66,16 @@ public class SearchOptions
     public bool PlayFirst { get; set; }
 }
 
+[Verb("complete-song", Hidden = true, HelpText = "Internal song completion endpoint.")]
+public class CompleteSongOptions
+{
+    [Value(0, Required = true)]
+    public string Query { get; set; } = string.Empty;
+
+    [Option("limit", Default = 50)]
+    public int Limit { get; set; }
+}
+
 [Verb("cnick", HelpText = "Change the nickname of a song.")]
 public class NicknameOptions
 {
@@ -95,6 +108,13 @@ public class ChangePlaylistOptions
 [Verb("l", HelpText = "List all playlists.")]
 public class ListPlaylistsOptions { }
 
+[Verb("lsongs", HelpText = "List songs in current playlist or a specified playlist name/#index.")]
+public class ListSongsOptions
+{
+    [Value(0, HelpText = "Optional playlist name or #index.")]
+    public string? Playlist { get; set; }
+}
+
 [Verb("ltheme", HelpText = "List available themes.")]
 public class ListThemesOptions { }
 
@@ -109,6 +129,9 @@ public class ChangeThemeOptions
 
 [Verb("spotify", HelpText = "Switch to spotify-only mode.")]
 public class SpotifyModeOptions { }
+
+[Verb("local", HelpText = "Switch to local playback mode.")]
+public class LocalModeOptions { }
 
 [Verb("cdevice", HelpText = "Change playback device.")]
 public class ChangeDeviceOptions

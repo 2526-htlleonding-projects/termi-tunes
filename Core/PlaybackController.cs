@@ -43,7 +43,47 @@ public class PlaybackController
     private static bool LooksLikePlaylistIndex(string target)
         => target.StartsWith('#') && int.TryParse(target[1..], out _);
 
-    private async Task<Song> ResolvePlaylistSongAsync(string target, bool shuffle)
+    private static bool TryParsePlaylistIndex(string selector, out int index)
+    {
+        if (selector.StartsWith('#'))
+        {
+            return int.TryParse(selector[1..], out index);
+        }
+
+        return int.TryParse(selector, out index);
+    }
+
+    private async Task<Song> SelectPlaylistSongAsync(IReadOnlyList<Song> songs, bool shuffle, bool smartShuffle)
+    {
+        if (songs.Count == 0)
+        {
+            throw new InvalidPlaybackStateException("play", "playlist is empty");
+        }
+
+        if (smartShuffle)
+        {
+            var current = await _store.GetCurrentSongAsync();
+            if (current != null)
+            {
+                var next = songs.FirstOrDefault(s => !s.Equals(current));
+                if (next != null)
+                {
+                    return next;
+                }
+            }
+
+            return songs[_random.Next(songs.Count)];
+        }
+
+        if (shuffle)
+        {
+            return songs[_random.Next(songs.Count)];
+        }
+
+        return songs[0];
+    }
+
+    private async Task<Song> ResolvePlaylistSongAsync(string target, bool shuffle, bool smartShuffle)
     {
         string playlistName;
 
@@ -70,7 +110,7 @@ public class PlaybackController
         }
 
         await _store.SetCurrentPlaylistAsync(playlistName);
-        return shuffle ? songs[_random.Next(songs.Count)] : songs[0];
+        return await SelectPlaylistSongAsync(songs, shuffle, smartShuffle);
     }
 
     private IEnumerable<string> EnumerateAudioFiles(string root)
@@ -80,18 +120,39 @@ public class PlaybackController
             ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".wma"
         };
 
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            IgnoreInaccessible = true
+        };
+
         IEnumerable<string> files;
         try
         {
-            files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories);
+            files = Directory.EnumerateFiles(root, "*", options);
         }
         catch
         {
             yield break;
         }
 
-        foreach (var file in files)
+        using var enumerator = files.GetEnumerator();
+        while (true)
         {
+            string file;
+            try
+            {
+                if (!enumerator.MoveNext())
+                {
+                    yield break;
+                }
+                file = enumerator.Current;
+            }
+            catch
+            {
+                yield break;
+            }
+
             if (extensions.Contains(Path.GetExtension(file)))
             {
                 yield return file;
@@ -155,7 +216,46 @@ public class PlaybackController
         return await SearchLibraryAsync(query.Trim(), limit);
     }
 
-    private async Task<Song> ResolveTargetAsync(string target, bool shuffle)
+    public async Task<IReadOnlyList<string>> GetSongCompletions(string query, int limit = 50)
+    {
+        if (limit <= 0)
+        {
+            return [];
+        }
+
+        var normalized = query.Trim();
+        var fetchLimit = Math.Max(200, limit * 20);
+        var matches = await _store.SearchSongsAsync(normalized, fetchLimit);
+
+        var currentPlaylist = await _store.GetCurrentPlaylistAsync();
+        var preferred = string.IsNullOrWhiteSpace(currentPlaylist)
+            ? []
+            : await _store.GetPlaylistSongsAsync(currentPlaylist);
+        var preferredKeys = new HashSet<string>(preferred.Select(s => $"{s.Source}:{s.Id}"));
+
+        var ranked = matches
+            .Select(song => new
+            {
+                Song = song,
+                InCurrentPlaylist = preferredKeys.Contains($"{song.Source}:{song.Id}"),
+                NicknameStartsWith = string.IsNullOrWhiteSpace(normalized) ||
+                                     song.Nickname.StartsWith(normalized, StringComparison.OrdinalIgnoreCase),
+                TitleStartsWith = string.IsNullOrWhiteSpace(normalized) ||
+                                  song.Title.StartsWith(normalized, StringComparison.OrdinalIgnoreCase)
+            })
+            .OrderByDescending(x => x.InCurrentPlaylist)
+            .ThenByDescending(x => x.NicknameStartsWith)
+            .ThenByDescending(x => x.TitleStartsWith)
+            .ThenBy(x => x.Song.Nickname, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.Song.Nickname)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(limit)
+            .ToList();
+
+        return ranked;
+    }
+
+    private async Task<Song> ResolveTargetAsync(string target, bool shuffle, bool smartShuffle)
     {
         if (string.IsNullOrWhiteSpace(target))
         {
@@ -171,14 +271,14 @@ public class PlaybackController
                 throw new InvalidPlaybackStateException("play", $"playlist '{playlist}' is empty");
             }
 
-            return shuffle ? songs[_random.Next(songs.Count)] : songs[0];
+            return await SelectPlaylistSongAsync(songs, shuffle, smartShuffle);
         }
 
         target = target.Trim();
 
         if (LooksLikePlaylistIndex(target))
         {
-            return await ResolvePlaylistSongAsync(target, shuffle);
+            return await ResolvePlaylistSongAsync(target, shuffle, smartShuffle);
         }
 
         var byNick = await _store.GetSongByNicknameAsync(target);
@@ -191,7 +291,7 @@ public class PlaybackController
         if (playlistCandidates.Count > 0)
         {
             await _store.SetCurrentPlaylistAsync(target);
-            return shuffle ? playlistCandidates[_random.Next(playlistCandidates.Count)] : playlistCandidates[0];
+            return await SelectPlaylistSongAsync(playlistCandidates, shuffle, smartShuffle);
         }
 
         if (File.Exists(target))
@@ -235,6 +335,17 @@ public class PlaybackController
 
     private IMusicBackend BackendFor(Song song) => song.Source == SPOTIFY ? _spotify : _local;
 
+    private async Task<bool> IsSpotifyOnlyModeAsync()
+        => string.Equals(await _store.GetSettingAsync("mode"), "spotify", StringComparison.OrdinalIgnoreCase);
+
+    private async Task EnsureSongModeCompatibilityAsync(Song song)
+    {
+        if (song.Source != SongSource.Spotify && await IsSpotifyOnlyModeAsync())
+        {
+            throw new BackendUnavailableException("local");
+        }
+    }
+
     private async Task<Song> GetCurrentSongOrThrow()
     {
         var current = await _store.GetCurrentSongAsync();
@@ -252,13 +363,15 @@ public class PlaybackController
     /// <param name="song"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Task Play(Song song, bool shuffle)
+    public Task Play(Song song, bool shuffle, bool loop = false, bool smartShuffle = false)
     {
-        return PlayInternal(song, shuffle);
+        return PlayInternal(song, shuffle, loop, smartShuffle);
     }
 
-    private async Task PlayInternal(Song song, bool shuffle)
+    private async Task PlayInternal(Song song, bool shuffle, bool loop, bool smartShuffle)
     {
+        await EnsureSongModeCompatibilityAsync(song);
+
         var previous = await _store.GetCurrentSongAsync();
         if (previous != null && !previous.Equals(song))
         {
@@ -269,6 +382,8 @@ public class PlaybackController
         await EnsureUniqueNicknameAsync(song);
         await _store.SetCurrentSongAsync(song);
         await _store.SetSettingAsync("shuffle", shuffle ? "true" : "false");
+        await _store.SetSettingAsync("shuffle_mode", smartShuffle ? "smart" : shuffle ? "shuffle" : "off");
+        await _store.SetSettingAsync("loop", loop ? "true" : "false");
         await _store.SetSettingAsync("playback_state", PlaybackState.Playing.ToString());
         await _store.AddSongToPlaylistAsync("Recents", song);
 
@@ -286,7 +401,8 @@ public class PlaybackController
 
     private async Task PauseInternal()
     {
-        await GetCurrentSongOrThrow();
+        var current = await GetCurrentSongOrThrow();
+        await BackendFor(current).PauseAsync();
         await _store.SetSettingAsync("playback_state", PlaybackState.Paused.ToString());
     }
     
@@ -302,7 +418,8 @@ public class PlaybackController
 
     private async Task ResumeInternal()
     {
-        await GetCurrentSongOrThrow();
+        var current = await GetCurrentSongOrThrow();
+        await BackendFor(current).ResumeAsync();
         await _store.SetSettingAsync("playback_state", PlaybackState.Playing.ToString());
     }
 
@@ -336,14 +453,34 @@ public class PlaybackController
 
     private async Task PlayNextInternal()
     {
+        var loop = string.Equals(await _store.GetSettingAsync("loop"), "true", StringComparison.OrdinalIgnoreCase);
+        if (loop)
+        {
+            var current = await _store.GetCurrentSongAsync();
+            if (current != null)
+            {
+                var shuffleModeLoop = await _store.GetSettingAsync("shuffle_mode");
+                await Play(
+                    current,
+                    string.Equals(shuffleModeLoop, "shuffle", StringComparison.OrdinalIgnoreCase),
+                    loop: true,
+                    smartShuffle: string.Equals(shuffleModeLoop, "smart", StringComparison.OrdinalIgnoreCase));
+                return;
+            }
+        }
+
         var song = await _store.DequeueAsync();
         if (song == null)
         {
             throw new InvalidPlaybackStateException("play next", "queue is empty");
         }
 
-        var shuffle = string.Equals(await _store.GetSettingAsync("shuffle"), "true", StringComparison.OrdinalIgnoreCase);
-        await Play(song, shuffle);
+        var shuffleMode = await _store.GetSettingAsync("shuffle_mode");
+        await Play(
+            song,
+            string.Equals(shuffleMode, "shuffle", StringComparison.OrdinalIgnoreCase),
+            loop,
+            string.Equals(shuffleMode, "smart", StringComparison.OrdinalIgnoreCase));
     }
     
     /// <summary>
@@ -364,13 +501,18 @@ public class PlaybackController
             throw new InvalidPlaybackStateException("play previous", "not been played before");
         }
 
-        var shuffle = string.Equals(await _store.GetSettingAsync("shuffle"), "true", StringComparison.OrdinalIgnoreCase);
-        await Play(song, shuffle);
+        var loop = string.Equals(await _store.GetSettingAsync("loop"), "true", StringComparison.OrdinalIgnoreCase);
+        var shuffleMode = await _store.GetSettingAsync("shuffle_mode");
+        await Play(
+            song,
+            string.Equals(shuffleMode, "shuffle", StringComparison.OrdinalIgnoreCase),
+            loop,
+            string.Equals(shuffleMode, "smart", StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task<Song> Search(string target, bool shuffle = false)
+    public async Task<Song> Search(string target, bool shuffle = false, bool smartShuffle = false)
     {
-        return await ResolveTargetAsync(target, shuffle);
+        return await ResolveTargetAsync(target, shuffle, smartShuffle);
     }
 
     public async Task Lyrics(bool printAll)
@@ -394,7 +536,7 @@ public class PlaybackController
         }
         else
         {
-            song = await ResolveTargetAsync(target, false);
+            song = await ResolveTargetAsync(target, false, false);
         }
 
         var targetPlaylist = string.IsNullOrWhiteSpace(playlist)
@@ -443,9 +585,38 @@ public class PlaybackController
         return await _store.GetPlaylistsAsync();
     }
 
+    public async Task<IReadOnlyList<Song>> ListSongs(string? playlistSelector)
+    {
+        string playlistName;
+        var playlists = await _store.GetPlaylistsAsync();
+        if (string.IsNullOrWhiteSpace(playlistSelector))
+        {
+            playlistName = (await _store.GetCurrentPlaylistAsync()) ?? "Recents";
+        }
+        else
+        {
+            playlistName = playlistSelector.Trim();
+            if (TryParsePlaylistIndex(playlistName, out var index))
+            {
+                if (index < 0 || index >= playlists.Count)
+                {
+                    throw new InvalidSongParameterException($"playlist index {playlistName}");
+                }
+
+                playlistName = playlists[index];
+            }
+            else if (!playlists.Contains(playlistName, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidSongParameterException($"playlist '{playlistName}'");
+            }
+        }
+
+        return await _store.GetPlaylistSongsAsync(playlistName);
+    }
+
     public async Task Queue(string target)
     {
-        var song = await ResolveTargetAsync(target, false);
+        var song = await ResolveTargetAsync(target, false, false);
         await _store.EnqueueAsync(song);
         Console.WriteLine($"Queued '{song.Title}' by {song.Artist}.");
     }
@@ -491,6 +662,12 @@ public class PlaybackController
     {
         await _store.SetSettingAsync("mode", "spotify");
         Console.WriteLine("Switched to spotify-only mode.");
+    }
+
+    public async Task SwitchLocalMode()
+    {
+        await _store.SetSettingAsync("mode", "local");
+        Console.WriteLine("Switched to local playback mode.");
     }
 }
 

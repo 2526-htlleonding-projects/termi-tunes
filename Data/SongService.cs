@@ -11,14 +11,16 @@ public class SongService : IPlaybackStore
 {
     private readonly string _connectionString = "Data Source=music.db";
 
-    private record SongRow(
-        string Id,
-        int Source,
-        string Title,
-        string Artist,
-        long DurationSeconds,
-        string? SourcePath,
-        string Nickname);
+    private sealed class SongRow
+    {
+        public string Id { get; set; } = string.Empty;
+        public long Source { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Artist { get; set; } = string.Empty;
+        public long DurationSeconds { get; set; }
+        public string? SourcePath { get; set; }
+        public string Nickname { get; set; } = string.Empty;
+    }
 
     private static Song ToSong(SongRow row)
     {
@@ -27,7 +29,7 @@ public class SongService : IPlaybackStore
             row.Title,
             row.Artist,
             TimeSpan.FromSeconds(row.DurationSeconds),
-            (SongSource)row.Source,
+            (SongSource)checked((int)row.Source),
             row.SourcePath,
             row.Nickname,
             []);
