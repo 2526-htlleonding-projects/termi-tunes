@@ -7,6 +7,7 @@ using Data.Exceptions;
 using LocalPlayer;
 using LocalPlayer.Exceptions;
 using CLI.Exceptions;
+using SpotifyPlayer.Exceptions;
 
 namespace CLI;
 
@@ -32,6 +33,7 @@ static class Program
         typeof(ListThemesOptions),
         typeof(ChangeThemeOptions),
         typeof(SpotifyModeOptions),
+        typeof(SpotifyAuthOptions),
         typeof(LocalModeOptions),
         typeof(ChangeDeviceOptions),
         typeof(ListDevicesOptions)
@@ -82,7 +84,7 @@ static class Program
                     },
                     _ => Task.FromResult(1));
         }
-        catch (Exception ex) when (ex is CliException or PlaybackException or DatabaseException or LocalPlayerException)
+        catch (Exception ex) when (ex is CliException or PlaybackException or DatabaseException or LocalPlayerException or SpotifyPlayerException)
         {
             Console.Error.WriteLine(ex.Message);
             return 1;

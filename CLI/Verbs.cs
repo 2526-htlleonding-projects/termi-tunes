@@ -130,6 +130,9 @@ public class ChangeThemeOptions
 [Verb("spotify", HelpText = "Switch to spotify-only mode.")]
 public class SpotifyModeOptions { }
 
+[Verb("spotify-auth", HelpText = "Initialize Spotify authentication.")]
+public class SpotifyAuthOptions { }
+
 [Verb("local", HelpText = "Switch to local playback mode.")]
 public class LocalModeOptions { }
 

@@ -33,6 +33,7 @@ public static class CommandMapper
             ListThemesOptions _ => new ListThemes(),
             ChangeThemeOptions o => new ChangeTheme { ThemeName = o.ThemeName },
             SpotifyModeOptions _ => new SwitchSpotifyMode(),
+            SpotifyAuthOptions _ => new SpotifyAuth(),
             LocalModeOptions _ => new SwitchLocalMode(),
             ChangeDeviceOptions o => new ChangeDevice { DeviceName = o.DeviceName },
             ListDevicesOptions _ => new ListDevices(),

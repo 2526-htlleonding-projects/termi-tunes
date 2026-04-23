@@ -214,6 +214,16 @@ public class CommandFlowTests
     }
 
     [Fact]
+    public async Task SpotifyAuth_DelegatesToSpotifyBackend()
+    {
+        var fx = await TestFixture.CreateAsync();
+
+        await new SpotifyAuth().ExecuteAsync(fx.Controller);
+
+        Assert.Equal(1, fx.SpotifyBackend.AuthCalls);
+    }
+
+    [Fact]
     public async Task SwitchLocalMode_SetsMode()
     {
         var fx = await TestFixture.CreateAsync();
@@ -266,6 +276,13 @@ public class CommandFlowTests
     {
         var mapped = CommandMapper.Map(new LocalModeOptions());
         Assert.IsType<SwitchLocalMode>(mapped);
+    }
+
+    [Fact]
+    public void CommandMapper_MapsSpotifyAuthVerb()
+    {
+        var mapped = CommandMapper.Map(new SpotifyAuthOptions());
+        Assert.IsType<SpotifyAuth>(mapped);
     }
 
     [Fact]
@@ -394,12 +411,13 @@ public class CommandFlowTests
         }
     }
 
-    private sealed class TrackingBackend : IMusicBackend
+    private sealed class TrackingBackend : IMusicBackend, ISpotifyAuthBackend
     {
         public int PlayCalls { get; private set; }
         public int PauseCalls { get; private set; }
         public int ResumeCalls { get; private set; }
         public int StopCalls { get; private set; }
+        public int AuthCalls { get; private set; }
         public Song? LastPlayed { get; private set; }
 
         public Task PlayAsync(Song song)
@@ -424,6 +442,12 @@ public class CommandFlowTests
         public Task StopAsync()
         {
             StopCalls++;
+            return Task.CompletedTask;
+        }
+
+        public Task AuthenticateAsync()
+        {
+            AuthCalls++;
             return Task.CompletedTask;
         }
     }

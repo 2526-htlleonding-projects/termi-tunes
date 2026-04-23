@@ -669,6 +669,16 @@ public class PlaybackController
         await _store.SetSettingAsync("mode", "local");
         Console.WriteLine("Switched to local playback mode.");
     }
+
+    public async Task SpotifyAuth()
+    {
+        if (_spotify is not ISpotifyAuthBackend authBackend)
+        {
+            throw new InvalidPlaybackStateException("authenticate spotify", "spotify backend does not support auth");
+        }
+
+        await authBackend.AuthenticateAsync();
+    }
 }
 
 // -- Utils --

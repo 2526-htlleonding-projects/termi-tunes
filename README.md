@@ -65,6 +65,7 @@ dotnet run --project CLI -- stop
 ### Switch playback mode
 
 ```bash
+dotnet run --project CLI -- spotify-auth
 dotnet run --project CLI -- spotify
 dotnet run --project CLI -- local
 ```
@@ -72,6 +73,10 @@ dotnet run --project CLI -- local
 ### Linux note
 
 For non-`.wav` local playback on Linux, install `ffplay` (ffmpeg package).
+
+### Spotify authentication (phase 1)
+
+Run `spotify-auth` to initialize Spotify OAuth. The CLI prompts for your Spotify Client ID, opens the browser for consent, waits for a local callback, and falls back to manual redirect-URL paste if needed. Tokens are stored in a separate local file at `~/.config/termi-tunes/spotify-auth.json`.
 
 ### Important
 
@@ -96,6 +101,7 @@ Use `dotnet run --project CLI -- <verb> [args]` where `<verb>` is one of the CLI
 - `lsongs [playlistNameOrIndex]`
 - `ltheme`
 - `ctheme <themeName>`
+- `spotify-auth`
 - `spotify`
 - `local`
 - `cdevice <deviceName>`
